@@ -5,4 +5,6 @@ namespace Kolokwium1.Services;
 public interface IVisitsService
 {
     Task<VisitsDTO> GetVisits(int id);
+    
+    Task<bool> PostVisits(CreateVisitDTO visits);
 }

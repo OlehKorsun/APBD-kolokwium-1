@@ -5,15 +5,14 @@ namespace Kolokwium1.Services;
 
 public class VisitsService : IVisitsService
 {
-    private string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=apbd;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
-    public VisitsService(IConfiguration configuration)
-    {
-        connectionString = configuration["DefaultConnection"];
-    }
+    // private string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=apbd;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
+    // public VisitsService(IConfiguration configuration)
+    // {
+    //     connectionString = configuration["DefaultConnection"];
+    // }
 
     public async Task<VisitsDTO> GetVisits(int visitId)
     {
-        
         string _connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=apbd;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
         
         VisitsDTO? visitsDTO = null;
@@ -75,6 +74,89 @@ public class VisitsService : IVisitsService
                 }
             }
         }
+
+        if (visitsDTO == null)
+        {
+            throw new Exception($"Nie znaleziono vizyty z ID: {visitId}");
+        }
+        
         return visitsDTO;
+    }
+
+
+
+
+    public async Task<bool> PostVisits(CreateVisitDTO visitsDTO)
+    {
+
+        string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=apbd;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
+
+        // sprawdzam czy juz istnieje wizyta
+        string checkVisitQuery = @"Select 1 from visit where visit_id = @visitId;";
+        
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        using (SqlCommand cmd = new SqlCommand(checkVisitQuery, conn))
+        {
+            await conn.OpenAsync();
+            cmd.Parameters.AddWithValue("@visitId", visitsDTO.VisitId);
+            using (var reader = await cmd.ExecuteReaderAsync())
+            {
+                bool checkRes = false;
+                while (await reader.ReadAsync())
+                {
+                    checkRes = reader.IsDBNull(0);
+                }
+                
+                if (!checkRes)
+                    throw new Exception($"Już istnieje wizyta o ID: {visitsDTO.VisitId}");
+            }
+        }
+        
+        
+        // sprawdzam czy istnieje client
+        string checkClientQuery = @"Select 1 from Client where client_id = @clientId;";
+        
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        using (SqlCommand cmd = new SqlCommand(checkClientQuery, conn))
+        {
+            await conn.OpenAsync();
+            cmd.Parameters.AddWithValue("@clientId", visitsDTO.ClientId);
+            using (var reader = await cmd.ExecuteReaderAsync())
+            {
+                bool checkRes = false;
+                while (await reader.ReadAsync())
+                {
+                    checkRes = reader.IsDBNull(0);
+                }
+                
+                if (checkRes)
+                    throw new Exception($"Nie istnieje klienta o ID: {visitsDTO.ClientId}");
+            }
+        }
+        
+        
+        // sprawdzam czy istnieje mechanik o podanym numerze licencji
+        string checkMechanicQuery = @"Select 1 from Mechanic where licence_number = @licenceNumber;";
+        
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        using (SqlCommand cmd = new SqlCommand(checkClientQuery, conn))
+        {
+            await conn.OpenAsync();
+            cmd.Parameters.AddWithValue("@licenceNumber", visitsDTO.MechanicLicenceNumber);
+            using (var reader = await cmd.ExecuteReaderAsync())
+            {
+                bool checkRes = false;
+                while (await reader.ReadAsync())
+                {
+                    checkRes = reader.IsDBNull(0);
+                }
+                
+                if (checkRes)
+                    throw new Exception($"Nie istnieje mechanika o numerze licencji: {visitsDTO.MechanicLicenceNumber}");
+            }
+        }
+
+
+        return false;
     }
 }

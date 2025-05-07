@@ -1,4 +1,5 @@
-﻿using Kolokwium1.Services;
+﻿using Kolokwium1.Models_DTOs;
+using Kolokwium1.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kolokwium1.Controllers;
@@ -14,17 +15,27 @@ public class VisitsController : ControllerBase
         _visitsService = visitsService;
     }
 
-
     [HttpGet("{visitId}")]
     public async Task<IActionResult> Get(int visitId)
     {
-        var result = _visitsService.GetVisits(visitId);
-
-        if (result == null)
+        try
         {
-            return NotFound($"Nie znaleziono vizyty o ID:{visitId}");
+            var result = _visitsService.GetVisits(visitId);
+            return Ok(result.Result);
         }
-        
-        return Ok(result.Result);
+        catch (Exception e)
+        {
+            return NotFound(e.Message);
+        }
+    }
+
+
+
+    [HttpPost]
+    public async Task<IActionResult> PostVisit([FromBody] CreateVisitDTO createVisitDto)
+    {
+        var resultat = _visitsService.PostVisits(createVisitDto);
+
+        return Created();
     }
 }
