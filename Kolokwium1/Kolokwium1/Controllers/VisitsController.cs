@@ -25,6 +25,6 @@ public class VisitsController : ControllerBase
             return NotFound($"Nie znaleziono vizyty o ID:{visitId}");
         }
         
-        return Ok(result);
+        return Ok(result.Result);
     }
 }

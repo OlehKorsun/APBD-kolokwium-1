@@ -5,7 +5,7 @@ namespace Kolokwium1.Services;
 
 public class VisitsService : IVisitsService
 {
-    private string connectionString;
+    private string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=apbd;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
     public VisitsService(IConfiguration configuration)
     {
         connectionString = configuration["DefaultConnection"];
@@ -13,6 +13,8 @@ public class VisitsService : IVisitsService
 
     public async Task<VisitsDTO> GetVisits(int visitId)
     {
+        
+        string _connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=apbd;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
         
         VisitsDTO? visitsDTO = null;
 
@@ -26,7 +28,7 @@ public class VisitsService : IVisitsService
                 Where Visit.visit_id = @visitId;";
 
 
-        using (SqlConnection conn = new SqlConnection(connectionString))
+        using (SqlConnection conn = new SqlConnection(_connectionString))
         using (SqlCommand cmd = new SqlCommand(visitQuery, conn))
         {
             await conn.OpenAsync();
@@ -57,7 +59,7 @@ public class VisitsService : IVisitsService
                                 new VisitServicesDTO()
                                 {
                                     name = reader.GetString(6),
-                                    serviceFee = reader.GetInt32(7)
+                                    serviceFee = reader.GetDecimal(7)
                                 }
                             }
                         };
@@ -66,8 +68,8 @@ public class VisitsService : IVisitsService
                     {
                         visitsDTO.VisitServices.Add(new VisitServicesDTO()
                         {
-                            name = reader.GetString(1),
-                            serviceFee = reader.GetInt32(2)
+                            name = reader.GetString(6),
+                            serviceFee = reader.GetDecimal(7)
                         });
                     }
                 }
