@@ -155,6 +155,13 @@ public class VisitsService : IVisitsService
                     throw new Exception($"Nie istnieje mechanika o numerze licencji: {visitsDTO.MechanicLicenceNumber}");
             }
         }
+        
+        
+        // sprawdzam czy istnieja servisy o podanej nazwie
+        foreach (CreateServiceDTO csdto in visitsDTO.Services)
+        {
+            
+        }
 
 
         return false;
